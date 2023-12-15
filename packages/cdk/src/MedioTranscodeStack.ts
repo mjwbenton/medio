@@ -13,7 +13,11 @@ import * as path from "path";
 export default class MedioTranscodeStack extends Stack {
   lambda: IFunction;
 
-  constructor(scope: Construct, id: string) {
+  constructor(
+    scope: Construct,
+    id: string,
+    { outputBucket }: { outputBucket: string }
+  ) {
     super(scope, id);
 
     const ffmpegLayer = new LayerVersion(this, "FfmpegLayer", {
@@ -35,6 +39,9 @@ export default class MedioTranscodeStack extends Stack {
       timeout: Duration.minutes(1),
       runtime: Runtime.NODEJS_18_X,
       memorySize: 2048,
+      environment: {
+        OUTPUT_BUCKET: outputBucket,
+      },
     });
   }
 }

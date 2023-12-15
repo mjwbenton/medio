@@ -8,20 +8,22 @@ import { Construct } from "constructs";
 
 export class MedioDataStack extends Stack {
   public readonly sourceDataBucket: IBucket;
-  private readonly newDataTopic: ITopic;
+  public readonly outputDataBucket: IBucket;
+  private readonly newSourceDataTopic: ITopic;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
-    this.sourceDataBucket = new Bucket(this, "Bucket");
-    this.newDataTopic = new Topic(this, "NewDataTopic");
+    this.sourceDataBucket = new Bucket(this, "SourceBucket");
+    this.outputDataBucket = new Bucket(this, "OutputBucket");
+    this.newSourceDataTopic = new Topic(this, "NewSourceDataTopic");
     this.sourceDataBucket.addEventNotification(
       EventType.OBJECT_CREATED,
-      new SnsDestination(this.newDataTopic)
+      new SnsDestination(this.newSourceDataTopic)
     );
   }
 
-  public subscribeLambdaToNewData(fn: IFunction) {
-    this.newDataTopic.addSubscription(new LambdaSubscription(fn));
+  public subscribeLambdaToSourceData(fn: IFunction) {
+    this.newSourceDataTopic.addSubscription(new LambdaSubscription(fn));
     this.sourceDataBucket.grantRead(fn);
   }
 }

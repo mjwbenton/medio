@@ -4,5 +4,8 @@ import { MedioDataStack } from "./MedioDataStack";
 
 const app = new App();
 const dataStack = new MedioDataStack(app, "MedioData");
-const transcodeStack = new MedioTranscodeStack(app, "MedioTranscode");
-dataStack.subscribeLambdaToNewData(transcodeStack.lambda);
+const transcodeStack = new MedioTranscodeStack(app, "MedioTranscode", {
+  outputBucket: dataStack.outputDataBucket.bucketName,
+});
+dataStack.outputDataBucket.grantWrite(transcodeStack.lambda);
+dataStack.subscribeLambdaToSourceData(transcodeStack.lambda);
