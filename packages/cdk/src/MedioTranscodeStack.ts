@@ -2,6 +2,7 @@ import { Duration, Stack } from "aws-cdk-lib";
 import {
   Architecture,
   Code,
+  IFunction,
   LayerVersion,
   Runtime,
 } from "aws-cdk-lib/aws-lambda";
@@ -10,6 +11,8 @@ import { Construct } from "constructs";
 import * as path from "path";
 
 export default class MedioTranscodeStack extends Stack {
+  lambda: IFunction;
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
@@ -18,7 +21,7 @@ export default class MedioTranscodeStack extends Stack {
       compatibleArchitectures: [Architecture.ARM_64],
     });
 
-    new NodejsFunction(this, "TranscodeFunction", {
+    this.lambda = new NodejsFunction(this, "TranscodeFunction", {
       layers: [ffmpegLayer],
       entry: path.join(__dirname, "../../transcode-lambda/dist/index.js"),
       handler: "handler",
