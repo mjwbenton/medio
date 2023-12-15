@@ -50,6 +50,9 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
   child.stdout.on("data", (data) => {
     console.log("stdout:", data.toString("utf-8"));
   });
+  child.on("close", (code) => {
+    console.log("child process exited with code:", code);
+  });
 
   await once(child, "end");
 
