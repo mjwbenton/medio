@@ -1,0 +1,21 @@
+{
+  "name": "@mattb.tech/medio-transcode-lambda",
+  "version": "1.0.0",
+  "description": "Lambda to transcode video files",
+  "main": "dist/index.js",
+  "author": "Matt Benton <m@mattb.tech>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "../../scripts/build.sh",
+    "clean": "../../scripts/clean.sh",
+    "fix": "../../scripts/fix.sh",
+    "check": "../../scripts/check.sh",
+    "watch": "../../scripts/watch.sh"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "prettier": "^2.8.1",
+    "typescript": "^4.9.4"
+  }
+}

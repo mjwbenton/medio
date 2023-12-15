@@ -1,0 +1,14 @@
+{
+  "name": "@mattb.tech/medio-ffmpeg-layer",
+  "version": "1.0.0",
+  "description": "Ffmeg layer for lambda",
+  "main": "dist/index.js",
+  "author": "Matt Benton <m@mattb.tech>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "./build.sh"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

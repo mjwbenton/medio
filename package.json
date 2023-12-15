@@ -1,0 +1,23 @@
+{
+  "name": "@mattb.tech/medio",
+  "version": "1.0.0",
+  "description": "Prepping short videos for display",
+  "main": "index.js",
+  "repository": "git@github.com:mjwbenton/medio.git",
+  "author": "Matthew Benton <m@mattb.tech>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn turbo run build",
+    "clean": "yarn turbo run clean && ./scripts/clean.sh",
+    "check": "yarn turbo run check",
+    "fix": "yarn turbo run fix",
+    "deploy": "yarn turbo run deploy"
+  },
+  "devDependencies": {
+    "turbo": "^1.2.9"
+  }
+}
