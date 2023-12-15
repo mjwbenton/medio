@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { once } from "events";
-import { S3Event, SNSEvent } from "aws-lambda";
+import { APIGatewayEvent, S3Event, SNSEvent } from "aws-lambda";
 import {
   GetObjectCommand,
   PutObjectCommand,
@@ -15,8 +15,10 @@ const { OUTPUT_BUCKET } = cleanEnv(process.env, {
 
 const S3 = new S3Client({});
 
-export const handler = async (event: SNSEvent) => {
-  const { bucket, key } = extractFromSNSEvent(event);
+export const handler = async (event: SNSEvent | APIGatewayEvent) => {
+  const { bucket, key } = isSNSEvent(event)
+    ? extractFromSNSEvent(event)
+    : extractFromAPIEvent(event);
   const signedUrl = await getSignedUrl(
     S3,
     new GetObjectCommand({ Bucket: bucket, Key: key })
@@ -46,6 +48,10 @@ export const handler = async (event: SNSEvent) => {
   await Promise.all([s3Promise, spawnPromise]);
 };
 
+function isSNSEvent(e: SNSEvent | APIGatewayEvent): e is SNSEvent {
+  return "Records" in e;
+}
+
 function extractFromSNSEvent(event: SNSEvent): { bucket: string; key: string } {
   const parsedEvent: S3Event = JSON.parse(event.Records[0].Sns.Message);
   const {
@@ -53,4 +59,15 @@ function extractFromSNSEvent(event: SNSEvent): { bucket: string; key: string } {
     bucket: { name: bucket },
   } = parsedEvent.Records[0].s3;
   return { key, bucket };
+}
+
+function extractFromAPIEvent(event: APIGatewayEvent): {
+  bucket: string;
+  key: string;
+} {
+  const { bucket, key } = event.queryStringParameters ?? {};
+  if (!bucket || !key) {
+    throw new Error("Invalid bucket and key in API event");
+  }
+  return { bucket, key };
 }

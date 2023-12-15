@@ -2,6 +2,7 @@ import { Duration, Stack } from "aws-cdk-lib";
 import {
   Architecture,
   Code,
+  FunctionUrlAuthType,
   IFunction,
   LayerVersion,
   Runtime,
@@ -42,6 +43,10 @@ export default class MedioTranscodeStack extends Stack {
       environment: {
         OUTPUT_BUCKET: outputBucket,
       },
+    });
+
+    this.lambda.addFunctionUrl({
+      authType: FunctionUrlAuthType.NONE,
     });
   }
 }
