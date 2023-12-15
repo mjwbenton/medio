@@ -1,5 +1,4 @@
 import { spawnSync } from "child_process";
-import { once } from "events";
 import { APIGatewayEvent, S3Event, SNSEvent } from "aws-lambda";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -44,24 +43,8 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     ],
     {
       stdio: "inherit",
-      stderr: "inherit",
     }
   );
-
-  child.on("error", (error) => {
-    console.error("Error executing:", error);
-  });
-  child.stderr.on("data", (data) => {
-    console.log("stderr:", data.toString("utf-8"));
-  });
-  child.stdout.on("data", (data) => {
-    console.log("stdout:", data.toString("utf-8"));
-  });
-  child.on("close", (code) => {
-    console.log("child process exited with code:", code);
-  });
-
-  await once(child, "end");
 
   console.log("Transcode complete, uploading to S3");
 
