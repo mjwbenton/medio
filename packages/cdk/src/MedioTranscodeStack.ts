@@ -37,9 +37,9 @@ export default class MedioTranscodeStack extends Stack {
         },
       },
       architecture: Architecture.ARM_64,
-      timeout: Duration.minutes(1),
+      timeout: Duration.minutes(2),
       runtime: Runtime.NODEJS_18_X,
-      memorySize: 2048,
+      memorySize: 3072,
       environment: {
         OUTPUT_BUCKET: outputBucket,
       },
