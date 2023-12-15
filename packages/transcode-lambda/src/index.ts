@@ -8,10 +8,13 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { cleanEnv, str } from "envalid";
+import * as fs from "fs";
 
 const { OUTPUT_BUCKET } = cleanEnv(process.env, {
   OUTPUT_BUCKET: str(),
 });
+
+const TEMP_FILE = "/tmp/temp.mp4";
 
 const S3 = new S3Client({});
 
@@ -25,6 +28,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
   );
   const child = spawn("/opt/ffmpeg", [
     "-y",
+    "-hide_banner",
     "-i",
     signedUrl,
     "-vf",
@@ -33,7 +37,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     "1M",
     "-b:a",
     "256k",
-    "-",
+    TEMP_FILE,
   ]);
 
   child.on("error", (error) => {
@@ -44,17 +48,15 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     console.error("stderr:", data.toString("utf-8"));
   });
 
-  const s3Promise = S3.send(
+  await once(child, "end");
+
+  await S3.send(
     new PutObjectCommand({
       Bucket: OUTPUT_BUCKET,
       Key: `${key}.mp4`,
-      Body: child.stdout,
+      Body: fs.createReadStream(TEMP_FILE),
     })
   );
-
-  const spawnPromise = once(child, "end");
-
-  await Promise.all([s3Promise, spawnPromise]);
 };
 
 function isSNSEvent(e: SNSEvent | APIGatewayEvent): e is SNSEvent {
