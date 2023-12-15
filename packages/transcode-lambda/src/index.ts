@@ -24,7 +24,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     new GetObjectCommand({ Bucket: bucket, Key: key })
   );
   const child = spawn(
-    `/opt/ffmpeg -y -i ${signedUrl} -vf format=gray,scale=w='if(gt(iw\\,ih)\\,480\\,-2)':h='if(gt(iw\\,ih)\\,-2\\,480)',eq=contrast=1.5 -b:v 1M -b:a 256k -`
+    `/opt/ffmpeg -y -i "${signedUrl}" -vf format=gray,scale=w='if(gt(iw\\,ih)\\,480\\,-2)':h='if(gt(iw\\,ih)\\,-2\\,480)',eq=contrast=1.5 -b:v 1M -b:a 256k -`
   );
 
   child.on("error", (error) => {
