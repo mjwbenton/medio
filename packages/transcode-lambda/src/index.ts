@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawnSync } from "child_process";
 import { once } from "events";
 import { APIGatewayEvent, S3Event, SNSEvent } from "aws-lambda";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -27,19 +27,26 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
 
   console.log(`Spawning ffmpeg with signed url: ${signedUrl}`);
 
-  const child = spawn("/opt/ffmpeg", [
-    "-y",
-    "-hide_banner",
-    "-i",
-    signedUrl,
-    "-vf",
-    "format=gray,scale=w='if(gt(iw\\,ih)\\,480\\,-2)':h='if(gt(iw\\,ih)\\,-2\\,480)',eq=contrast=1.5",
-    "-b:v",
-    "1M",
-    "-b:a",
-    "256k",
-    TEMP_FILE,
-  ]);
+  const child = spawnSync(
+    "/opt/ffmpeg",
+    [
+      "-y",
+      "-hide_banner",
+      "-i",
+      signedUrl,
+      "-vf",
+      "format=gray,scale=w='if(gt(iw\\,ih)\\,480\\,-2)':h='if(gt(iw\\,ih)\\,-2\\,480)',eq=contrast=1.5",
+      "-b:v",
+      "1M",
+      "-b:a",
+      "256k",
+      TEMP_FILE,
+    ],
+    {
+      stdio: "inherit",
+      stderr: "inherit",
+    }
+  );
 
   child.on("error", (error) => {
     console.error("Error executing:", error);
