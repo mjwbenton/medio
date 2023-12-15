@@ -41,7 +41,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
   });
 
   child.stderr.on("data", (data) => {
-    console.error("stderr:", data);
+    console.error("stderr:", data.toString("utf-8"));
   });
 
   const s3Promise = S3.send(
