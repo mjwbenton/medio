@@ -32,12 +32,15 @@ export class MedioCdnStack extends Stack {
       validation: CertificateValidation.fromDns(zone),
     });
 
+    const originAccessIdentity = new OriginAccessIdentity(this, "OAI");
+    bucket.grantRead(originAccessIdentity);
+
     const distribution = new CloudFrontWebDistribution(this, "Distribution", {
       originConfigs: [
         {
           s3OriginSource: {
             s3BucketSource: bucket,
-            originAccessIdentity: new OriginAccessIdentity(this, "OAI"),
+            originAccessIdentity,
           },
           behaviors: [{ isDefaultBehavior: true }],
         },
