@@ -1,5 +1,8 @@
 import { ApolloServer } from "@apollo/server";
-import { startServerAndCreateLambdaHandler } from "@as-integrations/aws-lambda";
+import {
+  handlers,
+  startServerAndCreateLambdaHandler,
+} from "@as-integrations/aws-lambda";
 import { Resolvers } from "./generated/graphql";
 import { buildSubgraphSchema } from "@apollo/subgraph";
 import gql from "graphql-tag";
@@ -29,4 +32,7 @@ const server = new ApolloServer({
   }),
 });
 
-export const handler = startServerAndCreateLambdaHandler(server);
+export const handler = startServerAndCreateLambdaHandler(
+  server,
+  handlers.createAPIGatewayProxyEventV2RequestHandler()
+);
