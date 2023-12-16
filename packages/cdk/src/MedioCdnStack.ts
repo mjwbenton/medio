@@ -37,6 +37,7 @@ export class MedioCdnStack extends Stack {
         {
           s3OriginSource: {
             s3BucketSource: bucket,
+            originAccessIdentity: new OriginAccessIdentity(this, "OAI"),
           },
           behaviors: [{ isDefaultBehavior: true }],
         },
