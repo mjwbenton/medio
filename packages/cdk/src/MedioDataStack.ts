@@ -18,7 +18,7 @@ export class MedioDataStack extends Stack {
     this.newSourceDataTopic = new Topic(this, "NewSourceDataTopic");
     this.sourceDataBucket.addEventNotification(
       EventType.OBJECT_CREATED,
-      new SnsDestination(this.newSourceDataTopic)
+      new SnsDestination(this.newSourceDataTopic),
     );
   }
 

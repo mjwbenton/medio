@@ -17,7 +17,7 @@ export default class MedioTranscodeStack extends Stack {
   constructor(
     scope: Construct,
     id: string,
-    { outputBucket }: { outputBucket: string }
+    { outputBucket }: { outputBucket: string },
   ) {
     super(scope, id);
 
