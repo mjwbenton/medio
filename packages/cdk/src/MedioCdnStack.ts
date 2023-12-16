@@ -1,11 +1,7 @@
 import { Stack } from "aws-cdk-lib";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
-import {
-  CloudFrontWebDistribution,
-  OriginAccessIdentity,
-} from "aws-cdk-lib/aws-cloudfront";
-import { Bucket } from "aws-cdk-lib/aws-s3";
+import { Distribution } from "aws-cdk-lib/aws-cloudfront";
 import {
   Certificate,
   CertificateValidation,
@@ -13,6 +9,7 @@ import {
 import { ARecord, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { HostedZone } from "aws-cdk-lib/aws-route53";
+import { S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
 
 const HOSTED_ZONE = "mattb.tech";
 const HOSTED_ZONE_ID = "Z2GPSB1CDK86DH";
@@ -32,23 +29,12 @@ export class MedioCdnStack extends Stack {
       validation: CertificateValidation.fromDns(zone),
     });
 
-    const distribution = new CloudFrontWebDistribution(this, "Distribution", {
-      originConfigs: [
-        {
-          s3OriginSource: {
-            s3BucketSource: bucket,
-            originAccessIdentity: new OriginAccessIdentity(this, "OAI"),
-          },
-          behaviors: [{ isDefaultBehavior: true }],
-        },
-      ],
-      viewerCertificate: {
-        aliases: [DOMAIN_NAME],
-        props: {
-          acmCertificateArn: certificate.certificateArn,
-          sslSupportMethod: "sni-only",
-        },
+    const distribution = new Distribution(this, "Distribution", {
+      defaultBehavior: {
+        origin: new S3Origin(bucket),
       },
+      domainNames: [DOMAIN_NAME],
+      certificate,
     });
 
     new ARecord(this, "AliasRecord", {
