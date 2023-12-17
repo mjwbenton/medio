@@ -30,6 +30,7 @@ const typeDefs = gql`
 
   type Recording {
     url: String!
+    name: String!
   }
 `;
 
@@ -40,13 +41,21 @@ const resolvers: Resolvers = {
         new ListObjectsV2Command({ Bucket: BUCKET }),
       );
       return (
-        objectsList.Contents?.map((object) => ({
-          url: `${CDN_DOMAIN}/${object.Key}`,
-        })) ?? []
+        objectsList.Contents?.filter((object) => object.Key)
+          .map((object) => ({
+            url: `${CDN_DOMAIN}/${object.Key!}`,
+            name: parseKey(object.Key!),
+          }))
+          .reverse() ?? []
       );
     },
   },
 };
+
+function parseKey(key: string) {
+  const [name] = key.split(".");
+  return name;
+}
 
 const server = new ApolloServer({
   schema: buildSubgraphSchema({
