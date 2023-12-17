@@ -3,9 +3,13 @@ import MedioTranscodeStack from "./MedioTranscodeStack";
 import { MedioDataStack } from "./MedioDataStack";
 import { MedioCdnStack } from "./MedioCdnStack";
 import MedioGraphqlStack from "./MedioGraphqlStack";
+import { MedioUploadUserStack } from "./MedioUploadUserStack";
 
 const app = new App();
 const dataStack = new MedioDataStack(app, "MedioData");
+new MedioUploadUserStack(app, "MedioUpload", {
+  bucket: dataStack.sourceDataBucket,
+});
 const transcodeStack = new MedioTranscodeStack(app, "MedioTranscode", {
   outputBucket: dataStack.outputDataBucket.bucketName,
 });
