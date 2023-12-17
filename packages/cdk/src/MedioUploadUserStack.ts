@@ -17,6 +17,7 @@ export class MedioUploadUserStack extends Stack {
       secretObjectValue: {
         accessKeyId: SecretValue.unsafePlainText(accessKey.accessKeyId),
         secretAccessKey: accessKey.secretAccessKey,
+        bucket: SecretValue.unsafePlainText(bucket.bucketName),
       },
     });
     new CfnOutput(this, "UploadUserAccessKeySecretArn", {
