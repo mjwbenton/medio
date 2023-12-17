@@ -1,4 +1,4 @@
-import { spawnSync } from "child_process";
+import { spawnSync, execSync } from "child_process";
 import { APIGatewayEvent, S3Event, SNSEvent } from "aws-lambda";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -47,6 +47,8 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
   );
 
   console.log("Transcode complete, uploading to S3");
+
+  execSync(`ls -lh ${TEMP_FILE}`, { stdio: "inherit" });
 
   const upload = new Upload({
     client: S3,
