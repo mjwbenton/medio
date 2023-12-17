@@ -10,8 +10,6 @@ const { OUTPUT_BUCKET } = cleanEnv(process.env, {
   OUTPUT_BUCKET: str(),
 });
 
-const TEMP_FILE = "/tmp/temp.mp4";
-
 const S3 = new S3Client({});
 
 export const handler = async (event: SNSEvent | APIGatewayEvent) => {
@@ -21,10 +19,12 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
 
   const signedUrl = await getSignedUrl(
     S3,
-    new GetObjectCommand({ Bucket: bucket, Key: key }),
+    new GetObjectCommand({ Bucket: bucket, Key: key })
   );
 
   console.log(`Spawning ffmpeg with signed url: ${signedUrl}`);
+
+  const tempFile = `/tmp/${key}.mp4`;
 
   const child = spawnSync(
     "/opt/ffmpeg",
@@ -39,11 +39,11 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
       "1M",
       "-b:a",
       "256k",
-      TEMP_FILE,
+      tempFile,
     ],
     {
       stdio: "inherit",
-    },
+    }
   );
 
   console.log("Transcode complete, uploading to S3");
@@ -51,14 +51,14 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
   // Wait 10 seconds?
   await new Promise((resolve) => setTimeout(resolve, 10_000));
 
-  execSync(`ls -lh ${TEMP_FILE}`, { stdio: "inherit" });
+  execSync(`ls -lh ${tempFile}`, { stdio: "inherit" });
 
   const upload = new Upload({
     client: S3,
     params: {
       Bucket: OUTPUT_BUCKET,
       Key: `${key}.mp4`,
-      Body: fs.createReadStream(TEMP_FILE),
+      Body: fs.createReadStream(tempFile),
     },
   });
 
