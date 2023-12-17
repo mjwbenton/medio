@@ -19,7 +19,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
 
   const signedUrl = await getSignedUrl(
     S3,
-    new GetObjectCommand({ Bucket: bucket, Key: key })
+    new GetObjectCommand({ Bucket: bucket, Key: key }),
   );
 
   console.log(`Spawning ffmpeg with signed url: ${signedUrl}`);
@@ -43,7 +43,7 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     ],
     {
       stdio: "inherit",
-    }
+    },
   );
 
   console.log("Transcode complete, uploading to S3");
