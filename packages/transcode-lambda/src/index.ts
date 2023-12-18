@@ -48,9 +48,6 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
 
   console.log("Transcode complete, uploading to S3");
 
-  // Wait 10 seconds?
-  await new Promise((resolve) => setTimeout(resolve, 10_000));
-
   execSync(`ls -lh ${tempFile}`, { stdio: "inherit" });
 
   const upload = new Upload({
