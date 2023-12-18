@@ -1,10 +1,12 @@
 import { spawnSync, execSync } from "child_process";
 import { APIGatewayEvent, S3Event, SNSEvent } from "aws-lambda";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { cleanEnv, str } from "envalid";
 import * as fs from "fs";
 import { Upload } from "@aws-sdk/lib-storage";
+import { file } from "tmp-promise";
+import { Readable } from "stream";
+import { finished } from "stream/promises";
 
 const { OUTPUT_BUCKET } = cleanEnv(process.env, {
   OUTPUT_BUCKET: str(),
@@ -17,29 +19,25 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
     ? extractFromSNSEvent(event)
     : extractFromAPIEvent(event);
 
-  const signedUrl = await getSignedUrl(
-    S3,
-    new GetObjectCommand({ Bucket: bucket, Key: key }),
-  );
+  const { path: sourceFile } = await file();
+  await downloadSourceFile({ bucket, key, path: sourceFile });
 
-  console.log(`Spawning ffmpeg with signed url: ${signedUrl}`);
+  const { path: outFile } = await file({ postfix: ".mp4" });
 
-  const tempFile = `/tmp/${key}.mp4`;
-
-  const child = spawnSync(
+  spawnSync(
     "/opt/ffmpeg",
     [
       "-y",
       "-hide_banner",
       "-i",
-      signedUrl,
+      sourceFile,
       "-vf",
       "format=gray,scale=w='if(gt(iw\\,ih)\\,480\\,-2)':h='if(gt(iw\\,ih)\\,-2\\,480)',eq=contrast=1.5",
       "-b:v",
       "1M",
       "-b:a",
       "256k",
-      tempFile,
+      outFile,
     ],
     {
       stdio: "inherit",
@@ -48,14 +46,14 @@ export const handler = async (event: SNSEvent | APIGatewayEvent) => {
 
   console.log("Transcode complete, uploading to S3");
 
-  execSync(`ls -lh ${tempFile}`, { stdio: "inherit" });
+  execSync(`ls -lh ${outFile}`, { stdio: "inherit" });
 
   const upload = new Upload({
     client: S3,
     params: {
       Bucket: OUTPUT_BUCKET,
       Key: `${key}.mp4`,
-      Body: fs.createReadStream(tempFile),
+      Body: fs.createReadStream(outFile),
     },
   });
 
@@ -90,4 +88,26 @@ function extractFromAPIEvent(event: APIGatewayEvent): {
     throw new Error("Invalid bucket and key in API event");
   }
   return { bucket, key };
+}
+
+async function downloadSourceFile({
+  bucket,
+  key,
+  path,
+}: {
+  bucket: string;
+  key: string;
+  path: string;
+}) {
+  const { Body: sourceFileBody } = await S3.send(
+    new GetObjectCommand({ Bucket: bucket, Key: key }),
+  );
+
+  if (!sourceFileBody || !(sourceFileBody instanceof Readable)) {
+    throw new Error("Invalid source file body");
+  }
+
+  const sourceFileStream = fs.createWriteStream(path);
+  sourceFileBody.pipe(sourceFileStream);
+  await finished(sourceFileStream);
 }
