@@ -5,11 +5,20 @@ import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 
 export class MedioUploadUserStack extends Stack {
-  constructor(scope: Construct, id: string, { bucket }: { bucket: IBucket }) {
+  constructor(
+    scope: Construct,
+    id: string,
+    {
+      sourceBucket,
+      outputBucket,
+    }: { sourceBucket: IBucket; outputBucket: IBucket },
+  ) {
     super(scope, id);
 
     const uploadUser = new User(this, "UploadUser");
-    bucket.grantReadWrite(uploadUser);
+    sourceBucket.grantReadWrite(uploadUser);
+    outputBucket.grantReadWrite(uploadUser);
+
     const accessKey = new AccessKey(this, "UploadUserAccessKey", {
       user: uploadUser,
     });
@@ -17,7 +26,8 @@ export class MedioUploadUserStack extends Stack {
       secretObjectValue: {
         accessKeyId: SecretValue.unsafePlainText(accessKey.accessKeyId),
         secretAccessKey: accessKey.secretAccessKey,
-        bucket: SecretValue.unsafePlainText(bucket.bucketName),
+        sourceBucket: SecretValue.unsafePlainText(sourceBucket.bucketName),
+        outputBucket: SecretValue.unsafePlainText(outputBucket.bucketName),
       },
     });
     new CfnOutput(this, "UploadUserAccessKeySecretArn", {
