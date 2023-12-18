@@ -8,7 +8,8 @@ import { MedioUploadUserStack } from "./MedioUploadUserStack";
 const app = new App();
 const dataStack = new MedioDataStack(app, "MedioData");
 new MedioUploadUserStack(app, "MedioUpload", {
-  bucket: dataStack.sourceDataBucket,
+  sourceBucket: dataStack.sourceDataBucket,
+  outputBucket: dataStack.outputDataBucket,
 });
 const transcodeStack = new MedioTranscodeStack(app, "MedioTranscode", {
   outputBucket: dataStack.outputDataBucket.bucketName,
